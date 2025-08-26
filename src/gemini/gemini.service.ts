@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { BasicPromptDto } from './dtos/basic-prompt.dto';
 
 /* Use Cases */
-import { basicPromptUseCase } from './use-cases';
+import { basicPromptStreamUseCase, basicPromptUseCase } from './use-cases';
 
 @Injectable()
 export class GeminiService {
@@ -13,5 +13,9 @@ export class GeminiService {
 
   async basicPrompt(basicPromptDto: BasicPromptDto) {
     return basicPromptUseCase(this.ai, basicPromptDto);
+  }
+
+  async basicPromptStream(basicPromptDto: BasicPromptDto) {
+    return basicPromptStreamUseCase(this.ai, basicPromptDto);
   }
 }
