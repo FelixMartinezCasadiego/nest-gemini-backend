@@ -12,6 +12,8 @@ export const basicPromptStreamUseCase = async (
   basicPromptDto: BasicPromptDto,
   options?: Options,
 ) => {
+  const files = basicPromptDto.files;
+  console.log('files');
   const { model = 'gemini-2.5-flash' } = options ?? {};
 
   const response = await ai.models.generateContentStream({
