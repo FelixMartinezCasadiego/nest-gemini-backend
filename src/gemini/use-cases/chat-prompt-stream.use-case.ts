@@ -1,4 +1,4 @@
-import { createPartFromUri, GoogleGenAI } from '@google/genai';
+import { Content, createPartFromUri, GoogleGenAI } from '@google/genai';
 
 /* Dtos */
 import { ChatPromptDto } from '../dtos/chat-prompt.dto';
@@ -6,6 +6,7 @@ import { geminiUploadFiles } from '../helpers/gemini-upload-file';
 
 interface Options {
   model?: string;
+  history: Content[];
 }
 
 export const chatPromptStreamUseCase = async (
@@ -18,23 +19,14 @@ export const chatPromptStreamUseCase = async (
   // todo: refactor
   const uploadedFiles = await geminiUploadFiles(ai, files);
 
-  const { model = 'gemini-2.5-flash' } = options ?? {};
+  const { model = 'gemini-2.5-flash', history = [] } = options ?? {};
 
   const chat = ai.chats.create({
     model,
     config: {
       systemInstruction: 'Responde únicamente en español, en formato markdown',
     },
-    history: [
-      {
-        role: 'user',
-        parts: [{ text: 'Hello' }],
-      },
-      {
-        role: 'model',
-        parts: [{ text: 'Hello!!' }],
-      },
-    ],
+    history,
   });
 
   return chat.sendMessageStream({

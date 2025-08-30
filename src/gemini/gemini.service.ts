@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { Content, GoogleGenAI } from '@google/genai';
 import { Injectable } from '@nestjs/common';
 
 /* Dtos */
@@ -16,6 +16,8 @@ import { ChatPromptDto } from './dtos/chat-prompt.dto';
 export class GeminiService {
   private ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+  private chatHistory = new Map<string, Content[]>();
+
   async basicPrompt(basicPromptDto: BasicPromptDto) {
     return basicPromptUseCase(this.ai, basicPromptDto);
   }
@@ -25,6 +27,21 @@ export class GeminiService {
   }
 
   async chatStream(chatPromptDto: ChatPromptDto) {
-    return chatPromptStreamUseCase(this.ai, chatPromptDto);
+    const chatHistory = this.getChatHistory(chatPromptDto.chatId);
+    return chatPromptStreamUseCase(this.ai, chatPromptDto, {
+      history: chatHistory,
+    });
+  }
+
+  saveMessage(chatId: string, message: Content) {
+    const messages = this.getChatHistory(chatId);
+
+    messages.push(message);
+
+    this.chatHistory.set(chatId, messages);
+  }
+
+  getChatHistory(chatId: string) {
+    return structuredClone(this.chatHistory.get(chatId) ?? []);
   }
 }
