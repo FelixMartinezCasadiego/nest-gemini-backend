@@ -5,7 +5,12 @@ import { Injectable } from '@nestjs/common';
 import { BasicPromptDto } from './dtos/basic-prompt.dto';
 
 /* Use Cases */
-import { basicPromptStreamUseCase, basicPromptUseCase } from './use-cases';
+import {
+  basicPromptStreamUseCase,
+  basicPromptUseCase,
+  chatPromptStreamUseCase,
+} from './use-cases';
+import { ChatPromptDto } from './dtos/chat-prompt.dto';
 
 @Injectable()
 export class GeminiService {
@@ -17,5 +22,9 @@ export class GeminiService {
 
   async basicPromptStream(basicPromptDto: BasicPromptDto) {
     return basicPromptStreamUseCase(this.ai, basicPromptDto);
+  }
+
+  async chatStream(chatPromptDto: ChatPromptDto) {
+    return chatPromptStreamUseCase(this.ai, chatPromptDto);
   }
 }
