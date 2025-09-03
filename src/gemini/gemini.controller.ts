@@ -94,7 +94,7 @@ export class GeminiController {
     }));
   }
 
-  @Post('/image/generation')
+  @Post('/image-generation')
   @UseInterceptors(FilesInterceptor('files'))
   async imageGeneration(
     @Body() imageGenerationDto: ImageGenerationDto,

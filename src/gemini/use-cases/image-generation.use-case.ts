@@ -1,4 +1,10 @@
-import { GoogleGenAI } from '@google/genai';
+import {
+  ContentListUnion,
+  createPartFromUri,
+  GoogleGenAI,
+  Modality,
+} from '@google/genai';
+import { v4 as uuidV4 } from 'uuid';
 
 /* Dtos */
 import { ImageGenerationDto } from '../dtos/image-generation.dto';
@@ -22,17 +28,45 @@ export const imageGenerationUseCase = async (
 ): Promise<imageGenerationResponse> => {
   const { prompt, files = [] } = imageGenerationDto; // []
 
-  // todo: refactor
+  const contents: ContentListUnion = [{ text: prompt }];
+
   const uploadedFiles = await geminiUploadFiles(ai, files);
 
-  const { model = 'gemini-2.5-flash' } = options ?? {};
+  uploadedFiles.forEach((file) => {
+    contents.push(createPartFromUri(file.uri ?? '', file.mimeType ?? ''));
+  });
 
-  const chat = ai.chats.create({
+  const { model = 'gemini-2.5-flash-image-preview' } = options ?? {};
+
+  const response = ai.models.generateContent({
     model,
+    contents,
     config: {
-      systemInstruction: 'Responde únicamente en español, en formato markdown',
+      responseModalities: [Modality.TEXT, Modality.IMAGE],
     },
   });
+
+  console.log('response --> ', response);
+
+  let imageUrl = '';
+  let text = '';
+  let imageId = uuidV4();
+
+  for (const part of (await response).candidates?.[0].content?.parts ?? []) {
+    if (part.text) {
+      text = part.text;
+      continue;
+    }
+
+    if (!part.inlineData) continue;
+
+    const imageData = part.inlineData.data;
+    if (typeof imageData === 'string') {
+      const buffer = Buffer.from(imageData, 'base64');
+      console.log({ buffer });
+    }
+    console.log({ text });
+  }
 
   return { imageUrl: 'xyz', text: 'ABC' };
 };
