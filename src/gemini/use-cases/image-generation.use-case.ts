@@ -1,3 +1,6 @@
+import path from 'path';
+import { writeFileSync } from 'fs';
+
 import {
   ContentListUnion,
   createPartFromUri,
@@ -11,6 +14,14 @@ import { ImageGenerationDto } from '../dtos/image-generation.dto';
 
 /* Helpers */
 import { geminiUploadFiles } from '../helpers/gemini-upload-file';
+
+const AI_IMAGES_PATH = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  'public/ai-images',
+);
 
 interface Options {
   model?: string;
@@ -46,8 +57,6 @@ export const imageGenerationUseCase = async (
     },
   });
 
-  console.log('response --> ', response);
-
   let imageUrl = '';
   let text = '';
   let imageId = uuidV4();
@@ -63,6 +72,10 @@ export const imageGenerationUseCase = async (
     const imageData = part.inlineData.data;
     if (typeof imageData === 'string') {
       const buffer = Buffer.from(imageData, 'base64');
+      const imagePath = path.join(AI_IMAGES_PATH, `${imageId}.png`);
+      writeFileSync(imagePath, buffer);
+      imageUrl = `${process.env.API_URL}/ai-images/${imageId}.png`;
+
       console.log({ buffer });
     }
     console.log({ text });
